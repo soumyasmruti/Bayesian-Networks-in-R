@@ -1,0 +1,360 @@
+---
+title: 'Homework 2: Bayesian Networks'
+author: "Soumya Smruti Mishra"
+date: "March 20, 2016"
+output: pdf_document
+header-includes: \usepackage{caption}
+---
+
+\captionsetup[table]{labelformat=empty}
+
+```{r}
+source("BayesianNetworks-template.r")
+library(ggplot2)
+riskFactor = read.csv("RiskFactors.csv") 
+varNames = colnames(riskFactor)
+riskCPT = createCPT.fromData(riskFactor, colnames(riskFactor))
+
+i = createCPT.fromData(riskFactor, c("income"))
+s.i = createCPT.fromData(riskFactor, c("smoke", "income"))
+e.i = createCPT.fromData(riskFactor, c("exercise", "income"))
+bmi.e.i = createCPT.fromData(riskFactor, c("bmi", "exercise", "income"))
+bp.s.i.e = createCPT.fromData(riskFactor, c("bp", "smoke", "income", "exercise"))
+c.s.i.e = createCPT.fromData(riskFactor, c("cholesterol", "smoke", "income", "exercise"))
+d.bmi = createCPT.fromData(riskFactor, c("diabetes", "bmi"))
+s.bmi.bp.c = createCPT.fromData(riskFactor, c("stroke", "bmi", "bp", "cholesterol"))
+attack.bmi.bp.c = createCPT.fromData(riskFactor, c("attack", "bmi", "bp", "cholesterol"))
+angina.bmi.bp.c = createCPT.fromData(riskFactor, c("angina", "bmi", "bp", "cholesterol"))
+
+riskNet = list(i, s.i, e.i, bmi.e.i, bp.s.i.e, c.s.i.e, d.bmi, s.bmi.bp.c, attack.bmi.bp.c, angina.bmi.bp.c)
+
+```
+
+1. what is the total number of probabilities needed to store the full joint distribution?
+
+```{r}
+nrow(riskCPT)
+```
+
+2. For each of the four health outcomes (diabetes, stroke, heart attack, angina), answer the
+following by querying your network (using your infer function):
+
+(a) What is the probability of the outcome if I have bad habits (smoke and don’t exercise)?
+How about if I have good habits (don’t smoke and do exercise)?
+
+Diabetes with Bad Habits:-
+```{r , results = 'asis', tab.cap = NULL, echo = TRUE}
+dbh = infer(riskNet, setdiff(varNames, c("diabetes", "smoke", "exercise")), c("smoke", "exercise"), c(1,2))
+print(knitr::kable(dbh, caption = "Table 2adbh - Probabilities of having daibetes when having bad habits."))
+```
+
+Diabetes with Good Habits:-
+```{r , results = 'asis', tab.cap = NULL, echo = TRUE}
+dgh = infer(riskNet, setdiff(varNames, c("diabetes", "smoke", "exercise")), c("smoke", "exercise"), c(2,1))
+print(knitr::kable(dgh, caption = "Table 2adgh- Probabilities of having daibetes when having good habits."))
+```
+
+Stroke with Bad Habits:-
+```{r , results = 'asis', tab.cap = NULL, echo = TRUE}
+sbh = infer(riskNet, setdiff(varNames, c("stroke", "smoke", "exercise")), c("smoke", "exercise"), c(1,2))
+print(knitr::kable(sbh, caption = "Table 2asbh- Probabilities of having stroke when having bad habits."))
+```
+
+Stroke with Good Habits:-
+```{r , results = 'asis', tab.cap = NULL, echo = TRUE}
+sgh = infer(riskNet, setdiff(varNames, c("stroke", "smoke", "exercise")), c("smoke", "exercise"), c(2,1))
+print(knitr::kable(sgh, caption = "Table 2asgh- Probabilities of having stroke when having good habits."))
+```
+
+Heart Attack with Bad Habits:-
+```{r , results = 'asis', tab.cap = NULL, echo = TRUE}
+hbh = infer(riskNet, setdiff(varNames, c("attack", "smoke", "exercise")), c("smoke", "exercise"), c(1,2))
+print(knitr::kable(hbh, caption = "Table 2ahbh- Probabilities of having heart attack when having bad habits."))
+```
+
+Heart Attack with Good Habits:-
+```{r , results = 'asis', tab.cap = NULL, echo = TRUE}
+hgh = infer(riskNet, setdiff(varNames, c("attack", "smoke", "exercise")), c("smoke", "exercise"), c(2,1))
+print(knitr::kable(hgh, caption = "Table 2ahgh- Probabilities of having heart attack when having good habits."))
+```
+
+Angina with Bad Habits:-
+```{r , results = 'asis', tab.cap = NULL, echo = TRUE}
+abh = infer(riskNet, setdiff(varNames, c("angina", "smoke", "exercise")), c("smoke", "exercise"), c(1,2))
+print(knitr::kable(abh, caption = "Table 2aabh- Probabilities of having Angina when having bad habits."))
+```
+
+Angina with Good Habits:-
+```{r , results = 'asis', tab.cap = NULL, echo = TRUE}
+agh =infer(riskNet, setdiff(varNames, c("angina", "smoke", "exercise")), c("smoke", "exercise"), c(2,1))
+print(knitr::kable(agh, caption = "Table 2agh- Probabilities of having angina when having good habits."))
+```
+
+(b) What is the probability of the outcome if I have poor health (high blood pressure, high cholesterol, and overweight)? What if I have good health (low blood pressure, low
+cholesterol, and normal weight)?
+
+Diabetes with poor health:-
+```{r , results = 'asis', tab.cap = NULL, echo = TRUE}
+dph = infer(riskNet, setdiff(varNames, c("diabetes", "bp", "cholesterol", "bmi")), c("bp", "cholesterol", "bmi"), c(1, 1, 3))
+print(knitr::kable(dph, caption = "Table 2bdph- Probabilities of having daibetes when having poor health."))
+```
+
+Diabetes with Good Health:-
+```{r , results = 'asis', tab.cap = NULL, echo = TRUE}
+ddgh = infer(riskNet, setdiff(varNames, c("diabetes", "bp", "cholesterol", "bmi")), c("bp", "cholesterol", "bmi"), c(3, 2, 2))
+print(knitr::kable(ddgh, caption = "Table 2bddgh- Probabilities of having daibetes when having good health."))
+```
+
+Stroke with poor health:-
+```{r , results = 'asis', tab.cap = NULL, echo = TRUE}
+sph = infer(riskNet, setdiff(varNames, c("stroke", "bp", "cholesterol", "bmi")), c("bp", "cholesterol", "bmi"), c(1, 1, 3))
+print(knitr::kable(sph, caption = "Table 2bsph- Probabilities of having stroke when having poor health."))
+```
+
+Stroke with Good Health:-
+```{r , results = 'asis', tab.cap = NULL, echo = TRUE}
+ssgh = infer(riskNet, setdiff(varNames, c("stroke", "bp", "cholesterol", "bmi")), c("bp", "cholesterol", "bmi"), c(3, 2, 2))
+print(knitr::kable(ssgh, caption = "Table 2bssgh- Probabilities of having stroke when having good health."))
+```
+
+Heart Attack with Poor health:-
+```{r , results = 'asis', tab.cap = NULL, echo = TRUE}
+hph = infer(riskNet, setdiff(varNames, c("attack", "bp", "cholesterol", "bmi")), c("bp", "cholesterol", "bmi"), c(1, 1, 3))
+print(knitr::kable(hph, caption = "Table 2bhph- Probabilities of having heart attack when having poor health."))
+```
+
+Heart Attack with Good Health:-
+```{r , results = 'asis', tab.cap = NULL, echo = TRUE}
+hagh = infer(riskNet, setdiff(varNames, c("attack", "bp", "cholesterol", "bmi")), c("bp", "cholesterol", "bmi"), c(3, 2, 2))
+print(knitr::kable(hagh, caption = "Table 2hagh- Probabilities of having heart attack when having good health."))
+```
+
+Angina with Poor health:-
+```{r , results = 'asis', tab.cap = NULL, echo = TRUE}
+aph = infer(riskNet, setdiff(varNames, c("angina", "bp", "cholesterol", "bmi")), c("bp", "cholesterol", "bmi"), c(1, 1, 3))
+print(knitr::kable(aph, caption = "Table 2baph- Probabilities of having angina when having poor health."))
+```
+
+Angina with Good Health:-
+```{r , results = 'asis', tab.cap = NULL, echo = TRUE}
+aagh = infer(riskNet, setdiff(varNames, c("angina", "bp", "cholesterol", "bmi")), c("bp", "cholesterol", "bmi"), c(3, 2, 2))
+print(knitr::kable(aagh, caption = "Table 2baagh- Probabilities of having angina when having good health."))
+```
+
+3. Evaluate the effect a person’s income has on their probability of having one of the four health outcomes (diabetes, stroke, heart attack, angina). For each of these four outcomes, plot their probability given income status (your horizontal axis should be i = 1, 2, . . . , 8, and your vertical axis should be P(y = 1 | income = i), where y is the outcome). What can you
+conclude?
+
+```{r}
+diabetes <- integer()
+stroke <- integer()
+attack <- integer()
+angina <- integer()
+for(i in 1:8){
+  db <- infer(riskNet, setdiff(varNames, c("diabetes", "income")), c("income"), c(i))
+  diabetes <- c(diabetes, db[db$diabetes == 1, ]$probs)
+  
+  str <- infer(riskNet, setdiff(varNames, c("stroke", "income")), c("income"), c(i))
+  stroke <- c(stroke, str[str$stroke == 1, ]$probs)
+
+  att <- infer(riskNet, setdiff(varNames, c("attack", "income")), c("income"), c(i))
+  attack <- c(attack, att[att$attack == 1, ]$probs)
+  
+  ang <- infer(riskNet, setdiff(varNames, c("angina", "income")), c("income"), c(i))
+  angina <- c(angina, ang[ang$angina == 1, ]$probs)
+}
+```
+
+
+```{r}
+dat <- list(diabetes=diabetes, stroke=stroke, attack=attack, angina=angina)
+dat <- lapply(dat, function(income) cbind(income = seq_along(income), probability = income))
+
+list.names <- names(dat)
+lns <- sapply(dat, nrow)
+dat <- as.data.frame(do.call("rbind", dat))
+dat$group <- rep(list.names, lns)
+
+ggplot(dat, aes(x = income, y = probability, colour = group)) +
+    theme_bw() +
+    geom_line(linetype = "twodash")
+```
+ 
+Inference from the Graph: From the above graph we can conclude that with increase in income the probability of having any of the four health outcomes (diabetes, stroke, heart attack, angina) decreases.  
+
+For diabetes with increase in income from 1 to 8 the probability of having diabetes decreases from 15% to 13%, the absolute decrease is around 2% approximately.  
+
+For stroke with increase in income from 1 to 8 the probability of having stroke decreases from 5.02% to 3.53%, the absolute decrease is 1.49%.
+
+For heart attack with increase in income from 1 to 8 the probability of having heart attack decreases from 7.3% to 5.1%, the absolute decrease is 2.2%. 
+
+For Anigna with increase in income from 1 to 8 the probability of having anigna decreases from 7.68% to 5.11%, the absolute decrease is 2.57%. 
+
+
+4. Notice there are no links in the graph between the habits (smoking and exercise) and the outcomes. What assumption is this making about the effects of smoking and exercise on health problems? Let’s test the validity of these assumptions. Create a second Bayesian network as above, but add edges from smoking to each of the four outcomes and edges from exercise to each of the four outcomes. Now redo the queries in Question 2. What was the effect, and do you think the assumptions of the first graph were valid or not?
+```{r}
+i <- createCPT.fromData(riskFactor,"income")
+e.i <- createCPT.fromData(riskFactor,c("exercise","income"))
+b.i.e <- createCPT.fromData(riskFactor,c("bmi","exercise","income"))
+b.e.i.s <- createCPT.fromData(riskFactor,c("bp","exercise","income","smoke"))
+s.i <- createCPT.fromData(riskFactor,c("smoke","income"))
+c.e.i.s <- createCPT.fromData(riskFactor,c("cholesterol","exercise","income","smoke"))
+d.b.s.e <- createCPT.fromData(riskFactor,c("diabetes","bmi","smoke","exercise"))
+s.b.b.c.s.e <- createCPT.fromData(riskFactor,c("stroke","bmi","bp","cholesterol","smoke","exercise"))
+at.b.b.c.s.e <- createCPT.fromData(riskFactor,c("attack","bmi","bp","cholesterol","smoke","exercise"))
+an.b.b.c.s.e <- createCPT.fromData(riskFactor,c("angina","bmi","bp","cholesterol","smoke","exercise"))
+riskNetNew = list(i, e.i, b.i.e, b.e.i.s, s.i, c.e.i.s, d.b.s.e, s.b.b.c.s.e, at.b.b.c.s.e, an.b.b.c.s.e)
+```
+
+(a) What is the probability of the outcome if I have bad habits (smoke and don’t exercise)?
+How about if I have good habits (don’t smoke and do exercise)?
+
+Diabetes with Bad Habits:-
+```{r , results = 'asis', tab.cap = NULL, echo = TRUE}
+debh = infer(riskNetNew, setdiff(varNames, c("diabetes", "smoke", "exercise")), c("smoke", "exercise"), c(1,2))
+print(knitr::kable(debh, caption = "Table 4adebh- Probabilities of having diabetes when having bad habits after adding extra edges from smoking and exercise to the outcomes."))
+```
+
+Diabetes with Good Habits:-
+```{r , results = 'asis', tab.cap = NULL, echo = TRUE}
+degh = infer(riskNetNew, setdiff(varNames, c("diabetes", "smoke", "exercise")), c("smoke", "exercise"), c(2,1))
+print(knitr::kable(degh, caption = "Table 4degh- Probabilities of having diabetes when having good habits after adding extra edges from smoking and exercise to the outcomes."))
+```
+
+
+Comparing these two above table and tables 2adbh and 2adgh we can conclude that, on adding edges from smoking and exercise to diabetes, the probability of having diabetes with bad habits increases, and probability of having diabetes with good habits decreases. Hence our assumption is not valid.
+
+Stroke with Bad Habits:-
+```{r , results = 'asis', tab.cap = NULL, echo = TRUE}
+sebh = infer(riskNetNew, setdiff(varNames, c("stroke", "smoke", "exercise")), c("smoke", "exercise"), c(1,2))
+print(knitr::kable(sebh, caption = "Table 4asebh - Probabilities of having stroke when having bad habits after adding extra edges from smoking and exercise to the outcomes."))
+```
+
+Stroke with Good Habits:-
+```{r , results = 'asis', tab.cap = NULL, echo = TRUE}
+segh = infer(riskNetNew, setdiff(varNames, c("stroke", "smoke", "exercise")), c("smoke", "exercise"), c(2,1))
+print(knitr::kable(segh, caption = "Table 4asegh - Probabilities of having stroke when having good habits after adding extra edges from smoking and exercise to the outcomes."))
+```
+
+
+Comparing these two above table and tables 2asbh and 2asgh we can conclude that, on adding edges from smoke and exercise to stroke, the probability of having stroke increases given bad habits and decreases given good habits. Hence our assumption was not valid. 
+
+Heart Attack with Bad Habits:-
+```{r , results = 'asis', tab.cap = NULL, echo = TRUE}
+hebh = infer(riskNetNew, setdiff(varNames, c("attack", "smoke", "exercise")), c("smoke", "exercise"), c(1,2))
+print(knitr::kable(hebh, caption = "Table 4ahebh - Probabilities of having heart attack when having bad habits after adding extra edges from smoking and exercise to the outcomes."))
+```
+
+Heart Attack with Good Habits:-
+```{r , results = 'asis', tab.cap = NULL, echo = TRUE}
+hegh = infer(riskNetNew, setdiff(varNames, c("attack", "smoke", "exercise")), c("smoke", "exercise"), c(2,1))
+print(knitr::kable(hegh, caption = "Table 4ahegh - Probabilities of having heart attack when having good habits after adding extra edges from smoking and exercise to the outcomes."))
+```
+
+
+Comparing these two above table and tables 2ahbh and 2ahgh we can conclude that, on adding edges from smoke and exercise to attack, the probability of having attack increases given bad habits and decreases given good habits. Hence our assumption was not valid. 
+
+Angina with Bad Habits:-
+```{r , results = 'asis', tab.cap = NULL, echo = TRUE}
+aebh = infer(riskNetNew, setdiff(varNames, c("angina", "smoke", "exercise")), c("smoke", "exercise"), c(1,2))
+print(knitr::kable(aebh, caption = "Table 4aaebh- Probabilities of having angina when having bad habits after adding extra edges from smoking and exercise to the outcomes."))
+```
+
+Angina with Good Habits:-
+```{r , results = 'asis', tab.cap = NULL, echo = TRUE}
+aegh = infer(riskNetNew, setdiff(varNames, c("angina", "smoke", "exercise")), c("smoke", "exercise"), c(2,1))
+print(knitr::kable(aegh, caption = "Table 4aaegh- Probabilities of having angina when having good habits after adding extra edges from smoking and exercise to the outcomes."))
+```
+
+
+Comparing these two above table and tables 2aabh and 2aagh we can conclude that, on adding edges from smoke and exercise to angina, the probability of having angina increases given bad habits and decreases given good habits. Hence our assumption was not valid.
+
+
+(b) What is the probability of the outcome if I have poor health (high blood pressure, high cholesterol, and overweight)? What if I have good health (low blood pressure, low
+cholesterol, and normal weight)?
+
+Diabetes with poor health:-
+```{r , results = 'asis', tab.cap = NULL, echo = TRUE}
+ddeph = infer(riskNetNew, setdiff(varNames, c("diabetes", "bp", "cholesterol", "bmi")), c("bp", "cholesterol", "bmi"), c(1, 1, 3))
+print(knitr::kable(ddeph, caption = "Table 4bddeph - Probabilities of having diabetes when having poor health after adding extra edges from smoking and exercise to the outcomes."))
+```
+
+Diabetes with Good Health:-
+```{r , results = 'asis', tab.cap = NULL, echo = TRUE}
+ddegh = infer(riskNetNew, setdiff(varNames, c("diabetes", "bp", "cholesterol", "bmi")), c("bp", "cholesterol", "bmi"), c(3, 2, 2))
+print(knitr::kable(ddegh, caption = "Table 4bddegh- Probabilities of having diabetes when having good health after adding extra edges from smoking and exercise to the outcomes."))
+```
+
+
+Comparing these two above table and tables 2bdph and 2bddgh we can conclude that, on adding edges from smoking and exercise to diabetes, the probability of having diabetes with poor health increases, and probability of having diabetes with good health decreases. Hence our assumption is not valid.  
+
+Stroke with poor health:-
+```{r , results = 'asis', tab.cap = NULL, echo = TRUE}
+steph = infer(riskNetNew, setdiff(varNames, c("stroke", "bp", "cholesterol", "bmi")), c("bp", "cholesterol", "bmi"), c(1, 1, 3))
+print(knitr::kable(steph, caption = "Table 4bsteph- Probabilities of having stroke when having poor health after adding extra edges from smoking and exercise to the outcomes."))
+```
+
+Stroke with Good Health:-
+```{r , results = 'asis', tab.cap = NULL, echo = TRUE}
+stegh = infer(riskNetNew, setdiff(varNames, c("stroke", "bp", "cholesterol", "bmi")), c("bp", "cholesterol", "bmi"), c(3, 2, 2))
+print(knitr::kable(stegh, caption = "Table 4bstegh- Probabilities of having stroke when having good health after adding extra edges from smoking and exercise to the outcomes."))
+```
+
+Comparing these two above table and tables 2bsph and 2bssgh we can conclude that, on adding edges from smoking and exercise to stroke, the resultant probabilities are almost same. So our assumptions are valid in this case.  
+
+Heart Attack with Poor health:-
+```{r , results = 'asis', tab.cap = NULL, echo = TRUE}
+haeph = infer(riskNetNew, setdiff(varNames, c("attack", "bp", "cholesterol", "bmi")), c("bp", "cholesterol", "bmi"), c(1, 1, 3))
+print(knitr::kable(haeph, caption = "Table 4bhaeph - Probabilities of having heart attack when having poor health after adding extra edges from smoking and exercise to the outcomes."))
+```
+
+Heart Attack with Good Health:-
+```{r , results = 'asis', tab.cap = NULL, echo = TRUE}
+haegh = infer(riskNetNew, setdiff(varNames, c("attack", "bp", "cholesterol", "bmi")), c("bp", "cholesterol", "bmi"), c(3, 2, 2))
+print(knitr::kable(haegh, caption = "Table 4bhaegh - Probabilities of having heart attack when having good health after adding extra edges from smoking and exercise to the outcomes."))
+```
+
+Comparing these two above table and tables 2bhph and 2bhagh we can conclude that, on adding edges from smoking and exercise to heart attack, the resultant probabilities are almost same. Hence our assumption is almost valid. 
+
+Angina with Poor health:-
+```{r , results = 'asis', tab.cap = NULL, echo = TRUE}
+aneph = infer(riskNetNew, setdiff(varNames, c("angina", "bp", "cholesterol", "bmi")), c("bp", "cholesterol", "bmi"), c(1, 1, 3))
+print(knitr::kable(aneph, caption = "Table 4baneph- Probabilities of having angina when having poor health after adding extra edges from smoking and exercise to the outcomes."))
+```
+
+Angina with Good Health:-
+```{r , results = 'asis', tab.cap = NULL, echo = TRUE}
+anegh = infer(riskNetNew, setdiff(varNames, c("angina", "bp", "cholesterol", "bmi")), c("bp", "cholesterol", "bmi"), c(3, 2, 2))
+print(knitr::kable(anegh, caption = "Table 4baneph- Probabilities of having angina when having good health after adding extra edges from smoking and exercise to the outcomes."))
+```
+
+Comparing these two above table and tables 2baph and 2baagh we can conclude that, on adding edges from smoking and exercise to angina, the resultant probabilities are same. Hence our assumption is valid. 
+
+5. Also notice there are no edges between the four outcomes. What assumption is this making
+about the interactions between health problems? Make a third network, starting from the
+network in Question 4, but adding an edge from diabetes to stroke. For both networks,
+evaluate the following probabilities:
+P(stroke = 1 | diabetes = 1) and P(stroke = 1 | diabetes = 3)
+Again, what was the effect, and was the assumption about the interaction between diabetes
+and stroke valid?
+```{r}
+s.b.b.c.s.e.d <- createCPT.fromData(riskFactor,c("stroke","bmi","bp","cholesterol","smoke","exercise", "diabetes"))
+riskNet5 = list(i, e.i, b.i.e, b.e.i.s, s.i, c.e.i.s, d.b.s.e, s.b.b.c.s.e.d, at.b.b.c.s.e, an.b.b.c.s.e)
+ds1o <-infer(riskNetNew, setdiff(varNames, c("stroke", "diabetes")), c("diabetes"), c(3))
+ds3o <- infer(riskNetNew, setdiff(varNames, c("stroke", "diabetes")), c("diabetes"), c(1))
+
+ds3 <- infer(riskNet5, setdiff(varNames, c("stroke", "diabetes")), c("diabetes"), c(3))
+ds1 <- infer(riskNet5, setdiff(varNames, c("stroke", "diabetes")), c("diabetes"), c(1))
+```
+
+
+```{r , results = 'asis', tab.cap = NULL, echo = TRUE}
+print(knitr::kable(ds3o, caption = "Table - Probabilities before adding edge between diabetes and stroke. When diabetes is 1, i.e, no diabetes"))
+print(knitr::kable(ds1o, caption = "Table - Probabilities before adding edge between diabetes and stroke. When diabetes is 3, i.e, has diabetes"))
+```
+
+```{r , results = 'asis', tab.cap = NULL, echo = TRUE}
+print(knitr::kable(ds1, caption = "Table - Probabilities after adding edge between diabetes and stroke. When diabetes is 1, i.e, has diabetes"))
+print(knitr::kable(ds3, caption = "Table - Probabilities after adding edge between diabetes and stroke. When diabetes is 3, i.e, no diabetes"))
+```
+
+From the above tables we can conclude that, on considering diabetes as one of the causes of stroke in Bayesian network the probability of having stroke given diabetes increases. There is 40% increase in relative probability.  The absolute difference in probabilities is small, but relatively they are high. Hence here our assumption was invalid.
